@@ -1,0 +1,22 @@
+{
+  "APIs": {
+    "zenz": "https://api.zahwazein.xyz",
+    "apikey": "YOURAPIKEY"
+  },
+  "options": {
+    "autoRead": true,
+    "self": true,
+    "limitCount": 20,
+    "limitGame": 20
+  },
+  "exif": {
+    "packname": "",
+    "author": "CAF"
+  },
+  "owner": [
+    "6283167714830",
+    "6282285910117"
+  ],
+  "timezone": "Asia/Jakarta",
+  "footer": "Powered by https://cafajah.my.id"
+}
