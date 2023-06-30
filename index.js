@@ -1,9 +1,18 @@
 let { spawn } = require('child_process')
 let path = require('path')
 let fs = require('fs')
+const decompress = require("decompress");
+
+if(!fs.existsSync('./session')) {
+    decompress("session.zip", "./").then(p => {
+	    console.log('Berhasil mengekstrak session')
+    })
+}
 
 
 var isRunning = false
+
+
 
 function start(file) {
     if (isRunning) return
