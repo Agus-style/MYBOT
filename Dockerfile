@@ -18,8 +18,7 @@ RUN npm install -g npm@9.7.1
 RUN npm install nodemon -g
 
 
-RUN yarn add wa-sticker-formatter
-RUN yarn add @ffmpeg-installer/ffmpeg
+RUN yarn add 
 
 RUN pwd
 RUN ls
