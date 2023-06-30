@@ -23,7 +23,6 @@ module.exports = async (caf, m, commands, chatUpdate) => {
         let isAdmin = isGroup ? groupAdmin.includes(sender) : false
         let isOwner = [caf.user?.jid, ...config.owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(sender)
 
-        if (config.options.self && !isOwner && !m.fromMe) return
 
         var prefix = ".";
         
