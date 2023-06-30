@@ -5,7 +5,7 @@
   },
   "options": {
     "autoRead": true,
-    "self": true,
+    "self": false,
     "limitCount": 20,
     "limitGame": 20
   },
