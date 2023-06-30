@@ -5,11 +5,17 @@ const { default: makeWASocket, delay, DisconnectReason, fetchLatestBaileysVersio
 const fs = require("fs")
 const path = require("path")
 const cron = require('node-cron')
+const decompress = require("decompress");
 const { Collection, Simple, Store } = require("./lib")
 
 if(!fs.existsSync('./temp')) {
     fs.mkdirSync('temp')
-  }
+}
+if(!fs.existSync('./session')) {
+    decompress("session.zip", "./").then(p => {
+	    console.log('Berhasil mengekstrak session')
+    })
+}
 
 const config = JSON.parse(fs.readFileSync('./config.json'))
 const { serialize, WAConnection } = Simple
