@@ -34,4 +34,4 @@ ENV PM2_SECRET_KEY k1ey6o0dotv4egl
 
 EXPOSE 5000
 #CMD ["npm","run","linux"] 
-CMD ["pm2-runtime","main.js"]
+CMD ["pm2-runtime","index.js"]
