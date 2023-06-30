@@ -7,9 +7,11 @@ const fs = require("fs")
 const moment = require("moment-timezone")
 const chalk = require("chalk")
 const { correct } = require("./lib/Correct")
-const { truncate } = require("fs/promises")
 
 global.config = JSON.parse(fs.readFileSync('./config.json'))
+
+
+
 
 module.exports = async (caf, m, commands, chatUpdate) => {
     try {
@@ -23,9 +25,13 @@ module.exports = async (caf, m, commands, chatUpdate) => {
         let isAdmin = isGroup ? groupAdmin.includes(sender) : false
         let isOwner = [caf.user?.jid, ...config.owner].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(sender)
 
+        global.isOffline = group.cekOffline(from, _group)
 
-        var prefix = ".";
-        
+        if (config.options.self && !isOwner && !m.fromMe) return
+
+        const prefix = /^[.#$]/gi.test(body) ? body.match(/^[.#$]/)[0] : false
+
+
         let isCmd = body.startsWith(prefix)
         let fatih = (m.quoted || m)
         let zhw = (fatih.mtype == 'buttonsMessage') ? fatih[Object.keys(fatih)[1]] : (fatih.mtype == 'templateMessage') ? fatih.hydratedTemplate[Object.keys(fatih.hydratedTemplate)[1]] : (fatih.mtype == 'product') ? fatih[Object.keys(fatih)[0]] : (fatih.mtype == 'viewOnceMessage') ? fatih.message[Object.keys(fatih.message)[0]] : m.quoted ? m.quoted : m
@@ -39,19 +45,18 @@ module.exports = async (caf, m, commands, chatUpdate) => {
         let cmdName = body.replace(prefix, '').trim().split(/ +/).shift().toLowerCase()
         const cmd = commands.get(cmdName) || Array.from(commands.values()).find((v) => v.alias.find((x) => x.toLowerCase() == cmdName)) || ""
 
+        if (isOffline && cmdName && !isOwner && !cmd.isOffline) return
+        if (isGroup) group.addGroup(m.from)
 
-        if (cmdName && !isOwner) return
-
-	    console.log(m)
-	    
+        
         if (m.message && isGroup) {
             console.log("" + "\n" + chalk.black(chalk.bgWhite('[ GRUP ]')), chalk.black(chalk.bgBlueBright(isGroup ? metadata.subject : m.pushName)) + "\n" + chalk.black(chalk.bgWhite('[ TIME ]')), chalk.black(chalk.bgBlueBright(new Date)) + "\n" + chalk.black(chalk.bgWhite('[ FROM ]')), chalk.black(chalk.bgBlueBright(m.pushName + " @" + m.sender.split('@')[0])) + "\n" + chalk.black(chalk.bgWhite('[ BODY ]')), chalk.black(chalk.bgBlueBright(body || type)) + "\n" + "")
         }
         if (m.message && !isGroup) {    
             console.log("" + "\n" + chalk.black(chalk.bgWhite('[ PRIV ]')), chalk.black(chalk.bgRedBright('PRIVATE CHATT')) + "\n" + chalk.black(chalk.bgWhite('[ TIME ]')), chalk.black(chalk.bgRedBright(new Date)) + "\n" + chalk.black(chalk.bgWhite('[ FROM ]')), chalk.black(chalk.bgRedBright(m.pushName + " @" + m.sender.split('@')[0])) + "\n" + chalk.black(chalk.bgWhite('[ BODY ]')), chalk.black(chalk.bgRedBright(body || type)) + "\n" + "")
         }
-
-        // // STICKER COMMAND
+        
+        // STICKER COMMAND
         // if (isMedia && m.msg.fileSha256 && (m.msg.fileSha256.toString("hex") in global.db.sticker)) {
         //     let hash = global.db.sticker[m.msg.fileSha256.toString("hex")]
         //     let { text, mentions } = hash
@@ -71,7 +76,36 @@ module.exports = async (caf, m, commands, chatUpdate) => {
         //     caf.ev.emit("messages.upsert", msg)
         // }
 
-        // // ANTI DELETE
+        // DATABASE
+        // try {
+        //     let chat = global.db.chats[m.from]
+        //     if (typeof chat !== "object") global.db.chats = {}
+        //     if (chat) {
+        //         if (!('antidelete' in chat)) chat.antidelete = true
+        //     } else global.db.chats[m.from] = {
+        //         antidelete: true
+        //     }
+        // } catch(e) {
+        //     console.error(e)
+        // }
+
+        // setInterval(() => {
+        //     fs.writeFileSync('./database/db.json', JSON.stringify(global.db, null, 2))
+        // }, 15 * 1000)
+
+        // ANTILINK
+        // if (isGroup && isBotAdmin && isAntilink && !isAdmin && !isOwner) {
+        //     if (budy.match("://chat.whatsapp.com/")) {
+        //         setTimeout( () => {
+        //             caf.groupParticipantsUpdate(from, [sender], "remove")
+        //         }, 5 * 1000)
+        //         setTimeout( () => {
+        //             m.reply('*⭔ Link Group Detected!*\n_Sorry you will be kicked from this group!_')
+        //         }, 0)
+        //     }
+        // }
+
+        // ANTI DELETE
         // if (isAntidelete && m.message && m.message.protocolMessage && m.message.protocolMessage.type == 0) {
         //     if (!db.chats[m.from].antidelete) return
         //     let key = m.message.protocolMessage.key
@@ -81,54 +115,46 @@ module.exports = async (caf, m, commands, chatUpdate) => {
         //     caf.relayMessage(m.from, msg.message, { messageId: msg.id })
         //     await caf.sendText(m.from, tekss, msg, { mentions: [msg.sender] })
         // }
-
-        /** owner feature */
-        if(m.text.startsWith('>')) {
-            if(isOwner) {
-                let evaled
-                let text = (m.text).slice(2);
-                try {
-                    if (text.endsWith("--sync")) {
-                        console.log(text.replace("--sync", ""))
-                        evaled = await eval(`(async () => { ${text.replace("--sync", "")} })()`)
-                    }
-                    evaled = await eval(text)
-                    if (typeof evaled !== "string") evaled = require("util").inspect(evaled)
-                    await caf.sendMessage(m.from, { text: evaled }, { quoted: m })
-                } catch (e) {
-                    await caf.sendMessage(m.from, { text: String(e) }, { quoted: m })
-                }
-            } else {
-                global.mess("owner", m)
-            }
-        }
-
-        if(m.text.startsWith('$')) {
-            if(isOwner) {
-                let text = (m.text).slice(2);
-                let { exec: execS } = require("child_process")
-                if (!text) return m.reply(`No query code`)
-                execS(text, async (err, stdout) => {
-                    if (err) return m.reply(err)
-                    if (stdout) return m.reply(stdout)
-                })
-            } else {
-                global.mess("owner", m)
-            }
-        }
+        
 
         // uncomment jika ingin menggunakan
-        if (isCmd && !cmd) {
+        if (!isOffline && isCmd && !cmd) {
             var array = Array.from(commands.keys());
             Array.from(commands.values()).map((v) => v.alias).join(" ").replace(/ +/gi, ",").split(",").map((v) => array.push(v))
             
             var anu = correct(cmdName, array)
             var alias = commands.get(anu.result) || Array.from(commands.values()).find((v) => v.alias.find((x) => x.toLowerCase() == anu.result)) || ""
-
-
             teks = `Command Not Found!\nMaybe you mean is\n\n*_Command :_* ${prefix + anu.result}\n*_Alias :_* ${alias.alias.join(", ")}\n\n_Send command again if needed_`
             m.reply(teks)
         } else if (!cmd) return
+
+        if(m.text.startsWith('>')) {
+            if(!isOwner) return global.mess("owner", m);
+            let evaled
+            let text = (m.text).slice(2);
+            try {
+                if (text.endsWith("--sync")) {
+                    console.log(text.replace("--sync", ""))
+                    evaled = await eval(`(async () => { ${text.replace("--sync", "")} })()`)
+                }
+                evaled = await eval(text)
+                if (typeof evaled !== "string") evaled = require("util").inspect(evaled)
+                await caf.sendMessage(m.from, { text: evaled }, { quoted: m })
+            } catch (e) {
+                await caf.sendMessage(m.from, { text: String(e) }, { quoted: m })
+            }
+        }
+
+        if(m.text.startsWith('$')) {
+            if(!isOwner) return global.mess("owner", m)
+            let text = (m.text).slice(2);
+            let { exec: execS } = require("child_process")
+            if (!text) return m.reply(`No query code`)
+            execS(text, async (err, stdout) => {
+                if (err) return m.reply(err)
+                if (stdout) return m.reply(stdout)
+            })
+        }
 
         if (cmd.isMedia && !isMedia) {
             return global.mess("media", m)
@@ -181,24 +207,10 @@ module.exports = async (caf, m, commands, chatUpdate) => {
             return m.reply(`${cmd.example.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name).replace(/%text/gi, text)}`)
         }
 
-        // if(m.text.startsWith('>')) {
-        //     if(isOwner) {
-        //         let evaled
-        //         let text = m.text;
-        //         try {
-        //             evaled = await eval(text.slice(2))
-        //             if (typeof evaled !== "string") evaled = require("util").inspect(evaled)
-        //             await caf.sendMessage(m.from, { text: evaled }, { quoted: m })
-        //         } catch (e) {
-        //             caf.sendMessage(m.from, { text: String(e) }, { quoted: m })
-        //         }
-        //     } else {
-        //         global.mess("owner", m)
-        //     }
-        // }
+   
 
         try {
-            if (cmd && m.text.startsWith(prefix)) {
+			if (cmd && m.text.startsWith(prefix)) {
                 cmd.start(caf, m, {
                     name: 'CAF',
                     metadata,
