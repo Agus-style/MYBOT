@@ -7,6 +7,10 @@ const path = require("path")
 const cron = require('node-cron')
 const { Collection, Simple, Store } = require("./lib")
 
+if(!fs.existsSync('./temp')) {
+    fs.mkdirSync('temp')
+  }
+
 const config = JSON.parse(fs.readFileSync('./config.json'))
 const { serialize, WAConnection } = Simple
 global.Commands = new Collection()
