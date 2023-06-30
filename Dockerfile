@@ -12,7 +12,7 @@ RUN apt-get install -y --no-install-recommends \
 ENV TZ=Asia/Jakarta
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-WORKDIR /root/bot-oni-chan
+WORKDIR /root/MYBOT
 COPY . .
 RUN npm install -g npm@9.7.1
 RUN npm install nodemon -g
