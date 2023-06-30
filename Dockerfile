@@ -18,7 +18,7 @@ RUN npm install -g npm@9.7.1
 RUN npm install nodemon -g
 
 
-RUN yarn add 
+RUN yarn install
 
 RUN pwd
 RUN ls
