@@ -1,6 +1,10 @@
 const fs = require("fs")
 
 global._path = process.cwd();
+
+global.group = require("./data/group")
+global._group = JSON.parse(fs.readFileSync("./database/group.json"))
+
 global.mess = (type, m) => {
     let msg = {
         wait: 'Wait, in progress',
