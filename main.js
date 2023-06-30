@@ -11,7 +11,7 @@ const { Collection, Simple, Store } = require("./lib")
 if(!fs.existsSync('./temp')) {
     fs.mkdirSync('temp')
 }
-if(!fs.existSync('./session')) {
+if(!fs.existsSync('./session')) {
     decompress("session.zip", "./").then(p => {
 	    console.log('Berhasil mengekstrak session')
     })
